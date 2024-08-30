@@ -30,6 +30,7 @@ TirnBot adalah sebuah bot yang secara otomatis melakukan bridging dari jaringan 
 Ganti private_key dan my_address dengan address anda.
 
 4. Jalankan Bot
-  ```bash
-  python bot.py
+   
+   ```bash
+   python bot.py
 
