@@ -16,10 +16,10 @@ TirnBot adalah sebuah bot yang secara otomatis melakukan bridging dari jaringan 
 1. Clone repository ini ke lokal Anda:
 
    ```bash
-   git clone https://github.com/username/tirnbot.git
+   git clone https://github.com/vinskasenda/TirnBot.git
 2. Masuk ke direktori proyek:
    ```bash
-   cd tirnbot
+   cd TirnBot
 3. Install dependencies yang diperlukan untuk menjalankan script tanpa error:
    ```bash
    pip install web3
