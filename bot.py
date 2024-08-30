@@ -11,7 +11,7 @@ def center_text(text):
     centered_lines = [line.center(terminal_width) for line in lines]
     return "\n".join(centered_lines)
 
-# ASCII art untuk VIKITOSHI
+# ASCII 
 ascii_art = """
  __     ___ _    _ _            _     _ 
  \ \   / (_) | _(_) |_ ___  ___| |__ (_)
@@ -27,7 +27,7 @@ Bot Auto Bridge Arbitrum Sepolia ke Base Sepolia https://bridge.t1rn.io/
 Airdrop Atambua
 """
 
-# Output ASCII art "VIKITOSHI" berwarna hijau dan deskripsi teks di bawahnya, semuanya di tengah
+# Output
 print("\033[92m" + center_text(ascii_art) + "\033[0m")
 print(center_text(description))
 
