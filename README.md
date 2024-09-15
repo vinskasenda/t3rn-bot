@@ -4,6 +4,10 @@ TirnBot adalah bot otomatis yang melakukan bridging token di antara beberapa jar
 Arbitrum Sepolia, OP Sepolia, Blast Sepolia, dan Base Sepolia. Bot ini dirancang untuk memudahkan 
 transfer token antarjaringan dengan cepat dan efisien.
 
+## Screenshot
+
+![TirnBot Screenshot](https://github.com/vinskasenda/t3rn-bot/blob/main/tirn.PNG?raw=true)
+
 ## Fitur
 - **Auto Bridging Multi-Chain:** Mengotomatisasi proses bridging dari Arbitrum Sepolia, OP Sepolia, 
   Blast Sepolia, dan Base Sepolia.
@@ -36,7 +40,7 @@ transfer token antarjaringan dengan cepat dan efisien.
 
 3. Install dependencies yang diperlukan:
    ```bash
-   pip install web3
+   pip install web3 colorama
    ```
 
 ## Konfigurasi
