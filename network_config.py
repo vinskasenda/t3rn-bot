@@ -12,9 +12,9 @@ networks = {
         'contract_address': '0xF221750e52aA080835d2957F2Eed0d5d7dDD8C38'
     },
     'Blast Sepolia': {
-        'rpc_url': 'https://base-sepolia-rpc.publicnode.com',
-        'chain_id': 84532,
-        'contract_address': '0x30A0155082629940d4bd9Cd41D6EF90876a0F1b5'
+        'rpc_url': 'https://blast-sepolia.blockpi.network/v1/rpc/public',
+        'chain_id': 168587773,
+        'contract_address': '0x1D5FD4ed9bDdCCF5A74718B556E9d15743cB26A2'
     },
     'Base Sepolia': {
         'rpc_url': 'https://base-sepolia-rpc.publicnode.com',
