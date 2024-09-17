@@ -50,6 +50,9 @@ transfer token antarjaringan dengan cepat dan efisien.
 
 2. Atur konfigurasi jaringan dan alamat kontrak di file `network_config.py` sesuai dengan jaringan 
    yang ingin Anda gunakan.
+   
+3. Ubah data `data_bridge.py` dengan cara lakukan swap manual pada jaringan yang ingin diambil data HEX nya lalu ketika sukses, cek data pada txhash, lihat contoh screenshot
+ ![TirnBot Screenshot](https://github.com/vinskasenda/t3rn-bot/blob/main/tirn2.PNG?raw=true)
 
 ## Cara Penggunaan
 
