@@ -3,10 +3,13 @@ from eth_account import Account
 import time
 import sys
 import os
+
+# Data jembatan (bridge data)
 from data_bridge import data_bridge
 from keys_and_addresses import private_keys, my_addresses, labels
 from network_config import networks
 
+# Fungsi untuk memusatkan teks
 def center_text(text):
     terminal_width = os.get_terminal_size().columns
     lines = text.splitlines()
@@ -22,25 +25,35 @@ ascii_art = """
 
 """
 
-# Deskripsi teks
 description = """
 Bot Auto Bridge  https://bridge.t1rn.io/
 """
 
-print("\033[92m" + center_text(ascii_art) + "\033[0m")
-print(center_text(description))
-print("\n\n")
-
-# Warna yang sesuai dengan setiap chain
-chain_colors = {
-    'Arbitrum Sepolia': '\033[91m',  # Merah untuk Arbitrum
-    'OP Sepolia': '\033[94m',        # Biru untuk OP
-    'Blast Sepolia': '\033[93m',     # Kuning untuk Blast
-    'Base Sepolia': '\033[95m'       # Ungu untuk Base
+# Warna dan simbol untuk setiap chain
+chain_symbols = {
+    'Arbitrum Sepolia': '\033[34m',   
+    'OP Sepolia': '\033[91m',         
+    'Blast Sepolia': '\033[93m',     
+    'Base Sepolia': '\033[96m'       
 }
 
-# Reset warna
+# Warna hijau
+green_color = '\033[92m'
 reset_color = '\033[0m'
+
+# URLs Explorer untuk setiap jaringan
+explorer_urls = {
+    'Arbitrum Sepolia': 'https://sepolia.arbiscan.io/tx/',
+    'OP Sepolia': 'https://sepolia-optimism.etherscan.io/tx/',
+    'Blast Sepolia': 'https://testnet.blastscan.io/tx/',
+    'Base Sepolia': 'https://sepolia.basescan.org/tx/',
+    'BRN': 'https://brn.explorer.caldera.xyz/tx/'
+}
+
+# Fungsi untuk mendapatkan saldo BRN
+def get_brn_balance(web3, my_address):
+    balance = web3.eth.get_balance(my_address)
+    return web3.from_wei(balance, 'ether')
 
 # Fungsi untuk membuat dan mengirim transaksi
 def send_bridge_transaction(web3, account, my_address, data, network_name):
@@ -83,88 +96,78 @@ def send_bridge_transaction(web3, account, my_address, data, network_name):
 
     try:
         tx_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+        # Mendapatkan alamat pengirim dan penerima
+        sender_address = account.address
+        to_address = networks[network_name]['contract_address']
+
+        # Mendapatkan saldo terkini
+        balance = web3.eth.get_balance(my_address)
+        formatted_balance = web3.from_wei(balance, 'ether')
+
+        # Mendapatkan link explorer
+        explorer_link = f"{explorer_urls[network_name]}{web3.to_hex(tx_hash)}"
+
+        # Menampilkan informasi transaksi
+        print(f"{green_color}📤 Alamat Pengirim: {sender_address}")
+        print(f"⛽ Gas digunakan: {tx_receipt['gasUsed']}")
+        print(f"🗳️  Nomor blok: {tx_receipt['blockNumber']}")
+        print(f"💰 Saldo ETH: {formatted_balance} ETH")
+        brn_balance = get_brn_balance(Web3(Web3.HTTPProvider('https://brn.rpc.caldera.xyz/http')), my_address)
+        print(f"🔵 Saldo BRN: {brn_balance} BRN")
+        print(f"🔗 Link Explorer: {explorer_link}\n{reset_color}")
+
         return web3.to_hex(tx_hash), value_in_ether
     except Exception as e:
         print(f"Error sending transaction: {e}")
         return None, None
 
-successful_txs = 0
+def process_network_transactions(network_name, bridges, chain_data, successful_txs):
+    web3 = Web3(Web3.HTTPProvider(chain_data['rpc_url']))
+    if not web3.is_connected():
+        raise Exception(f"Tidak dapat terhubung ke jaringan {network_name}")
 
-try:
+    for bridge in bridges:
+        for i, private_key in enumerate(private_keys):
+            account = Account.from_key(private_key)
+            data = data_bridge[bridge]
+            result = send_bridge_transaction(web3, account, my_addresses[i], data, network_name)
+            if result:
+                tx_hash, value_sent = result
+                successful_txs += 1
+                print(f"{chain_symbols[network_name]}🚀 Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah Bridge: {value_sent:.5f} ETH ✅{reset_color}\n")
+                print(f"{'='*150}")
+                print("\n")
+            time.sleep(7)
+
+    return successful_txs
+
+def main():
+    print("\033[92m" + center_text(ascii_art) + "\033[0m")
+    print(center_text(description))
+    print("\n\n")
+
+    successful_txs = 0
+
     while True:
-        # Transaksi dari Arbitrum Sepolia
-        network_name = 'Arbitrum Sepolia'
-        web3 = Web3(Web3.HTTPProvider(networks[network_name]['rpc_url']))
-        if not web3.is_connected():
-            raise Exception(f"Tidak dapat terhubung ke jaringan {network_name}")
+        try:
+            # Transaksi dari Arbitrum Sepolia
+            successful_txs = process_network_transactions('Arbitrum Sepolia', ["ARB - BASE", "ARB - OP SEPOLIA", "ARB - BLAST"], networks['Arbitrum Sepolia'], successful_txs)
 
-        bridges = ["ARB - BASE", "ARB - OP SEPOLIA", "ARB - BLAST"]
-        for bridge in bridges:
-            for i, private_key in enumerate(private_keys):
-                account = Account.from_key(private_key)
-                data = data_bridge[bridge]
-                result = send_bridge_transaction(web3, account, my_addresses[i], data, network_name)
-                if result:
-                    tx_hash, value_sent = result
-                    successful_txs += 1
-                    print(f"{chain_colors[network_name]}🚀 Tx Hash: {tx_hash} | Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah: {value_sent:.5f} ETH ✅{reset_color}\n")
-                time.sleep(10)
+            # Transaksi dari OP Sepolia
+            successful_txs = process_network_transactions('OP Sepolia', ["OP - BLAST", "OP - ARB", "OP - BASE"], networks['OP Sepolia'], successful_txs)
 
-        # Transaksi dari OP Sepolia
-        network_name = 'OP Sepolia'
-        web3 = Web3(Web3.HTTPProvider(networks[network_name]['rpc_url']))
-        if not web3.is_connected():
-            raise Exception(f"Tidak dapat terhubung ke jaringan {network_name}")
+            # Transaksi dari Blast Sepolia
+            successful_txs = process_network_transactions('Blast Sepolia', ["BLAST - OP", "BLAST - ARB", "BLAST - BASE"], networks['Blast Sepolia'], successful_txs)
 
-        bridges = ["OP - BLAST", "OP - ARB", "OP - BASE"]
-        for bridge in bridges:
-            for i, private_key in enumerate(private_keys):
-                account = Account.from_key(private_key)
-                data = data_bridge[bridge]
-                result = send_bridge_transaction(web3, account, my_addresses[i], data, network_name)
-                if result:
-                    tx_hash, value_sent = result
-                    successful_txs += 1
-                    print(f"{chain_colors[network_name]}🚀 Tx Hash: {tx_hash} | Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah: {value_sent:.5f} ETH ✅{reset_color}\n")
-                time.sleep(10)
+            # Transaksi dari Base Sepolia
+            successful_txs = process_network_transactions('Base Sepolia', ["BASE - OP", "BASE - ARB", "BASE - BLAST"], networks['Base Sepolia'], successful_txs)
 
-        # Transaksi dari Blast Sepolia
-        network_name = 'Blast Sepolia'
-        web3 = Web3(Web3.HTTPProvider(networks[network_name]['rpc_url']))
-        if not web3.is_connected():
-            raise Exception(f"Tidak dapat terhubung ke jaringan {network_name}")
+        except KeyboardInterrupt:
+            print("\nScript dihentikan oleh pengguna. ✋")
+            print(f"Total transaksi sukses: {successful_txs} 🎉")
+            sys.exit(0)
 
-        bridges = ["BLAST - OP", "BLAST - ARB", "BLAST - BASE"]
-        for bridge in bridges:
-            for i, private_key in enumerate(private_keys):
-                account = Account.from_key(private_key)
-                data = data_bridge[bridge]
-                result = send_bridge_transaction(web3, account, my_addresses[i], data, network_name)
-                if result:
-                    tx_hash, value_sent = result
-                    successful_txs += 1
-                    print(f"{chain_colors[network_name]}🚀 Tx Hash: {tx_hash} | Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah: {value_sent:.5f} ETH ✅{reset_color}\n")
-                time.sleep(10)
-
-        # Transaksi dari Base Sepolia
-        network_name = 'Base Sepolia'
-        web3 = Web3(Web3.HTTPProvider(networks[network_name]['rpc_url']))
-        if not web3.is_connected():
-            raise Exception(f"Tidak dapat terhubung ke jaringan {network_name}")
-
-        bridges = ["BASE - OP", "BASE - ARB", "BASE - BLAST"]
-        for bridge in bridges:
-            for i, private_key in enumerate(private_keys):
-                account = Account.from_key(private_key)
-                data = data_bridge[bridge]
-                result = send_bridge_transaction(web3, account, my_addresses[i], data, network_name)
-                if result:
-                    tx_hash, value_sent = result
-                    successful_txs += 1
-                    print(f"{chain_colors[network_name]}🚀 Tx Hash: {tx_hash} | Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah: {value_sent:.5f} ETH ✅{reset_color}\n")
-                time.sleep(10)
-
-except KeyboardInterrupt:
-    print("\nScript dihentikan oleh pengguna. ✋")
-    print(f"Total transaksi sukses: {successful_txs} 🎉")
-    sys.exit(0)
+if __name__ == "__main__":
+    main()
