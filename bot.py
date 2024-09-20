@@ -22,7 +22,6 @@ ascii_art = """
   \ \ / /| | |/ / | __/ _ \/ __| '_ \| |
    \ V / | |   <| | || (_) \__ \ | | | |
     \_/  |_|_|\_\_|\__\___/|___/_| |_|_|
-
 """
 
 description = """
@@ -68,7 +67,7 @@ def send_bridge_transaction(web3, account, my_address, data, network_name):
             'data': data,
             'value': value_in_wei
         })
-        gas_limit = gas_estimate + 10000
+        gas_limit = gas_estimate + 50000  # Increase safety margin
     except Exception as e:
         print(f"Error estimating gas: {e}")
         return None
@@ -98,10 +97,6 @@ def send_bridge_transaction(web3, account, my_address, data, network_name):
         tx_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
         tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-        # Mendapatkan alamat pengirim dan penerima
-        sender_address = account.address
-        to_address = networks[network_name]['contract_address']
-
         # Mendapatkan saldo terkini
         balance = web3.eth.get_balance(my_address)
         formatted_balance = web3.from_wei(balance, 'ether')
@@ -110,7 +105,7 @@ def send_bridge_transaction(web3, account, my_address, data, network_name):
         explorer_link = f"{explorer_urls[network_name]}{web3.to_hex(tx_hash)}"
 
         # Menampilkan informasi transaksi
-        print(f"{green_color}📤 Alamat Pengirim: {sender_address}")
+        print(f"{green_color}📤 Alamat Pengirim: {account.address}")
         print(f"⛽ Gas digunakan: {tx_receipt['gasUsed']}")
         print(f"🗳️  Nomor blok: {tx_receipt['blockNumber']}")
         print(f"💰 Saldo ETH: {formatted_balance} ETH")
@@ -123,6 +118,7 @@ def send_bridge_transaction(web3, account, my_address, data, network_name):
         print(f"Error sending transaction: {e}")
         return None, None
 
+# Fungsi untuk memproses transaksi pada jaringan tertentu
 def process_network_transactions(network_name, bridges, chain_data, successful_txs):
     web3 = Web3(Web3.HTTPProvider(chain_data['rpc_url']))
     if not web3.is_connected():
@@ -136,7 +132,13 @@ def process_network_transactions(network_name, bridges, chain_data, successful_t
             if result:
                 tx_hash, value_sent = result
                 successful_txs += 1
-                print(f"{chain_symbols[network_name]}🚀 Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah Bridge: {value_sent:.5f} ETH ✅{reset_color}\n")
+
+                # Check if value_sent is valid before formatting
+                if value_sent is not None:
+                    print(f"{chain_symbols[network_name]}🚀 Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} | Jumlah Bridge: {value_sent:.5f} ETH ✅{reset_color}\n")
+                else:
+                    print(f"{chain_symbols[network_name]}🚀 Total Tx Sukses: {successful_txs} | {labels[i]} | Bridge: {bridge} ✅{reset_color}\n")
+
                 print(f"{'='*150}")
                 print("\n")
             time.sleep(7)
