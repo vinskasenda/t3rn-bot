@@ -2,7 +2,7 @@
 
 networks = {
     'Arbitrum Sepolia': {
-        'rpc_url': 'https://endpoints.omniatech.io/v1/arbitrum/sepolia/public',
+        'rpc_url': 'https://sepolia-rollup.arbitrum.io/rpc',
         'chain_id': 421614,
         'contract_address': '0x8D86c3573928CE125f9b2df59918c383aa2B514D'
     },
