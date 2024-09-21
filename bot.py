@@ -16,6 +16,10 @@ def center_text(text):
     centered_lines = [line.center(terminal_width) for line in lines]
     return "\n".join(centered_lines)
 
+# Fungsi untuk membersihkan terminal
+def clear_terminal():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 ascii_art = """
  __     ___ _    _ _            _     _ 
  \ \   / (_) | _(_) |_ ___  ___| |__ (_)
@@ -39,6 +43,7 @@ chain_symbols = {
 # Warna hijau
 green_color = '\033[92m'
 reset_color = '\033[0m'
+menu_color = '\033[95m'  # Warna untuk teks menu
 
 # URLs Explorer untuk setiap jaringan
 explorer_urls = {
@@ -145,6 +150,19 @@ def process_network_transactions(network_name, bridges, chain_data, successful_t
 
     return successful_txs
 
+# Fungsi untuk menampilkan menu pilihan chain
+def display_menu():
+    print(f"{menu_color}Pilih chain untuk menjalankan transaksi:{reset_color}")
+    print("")
+    print(f"{chain_symbols['Arbitrum Sepolia']}1. ARB -> OP, BLAST, BASE Sepolia{reset_color}")
+    print(f"{chain_symbols['OP Sepolia']}2. OP -> ARB, BLAST, BASE Sepolia{reset_color}")
+    print(f"{chain_symbols['Blast Sepolia']}3. BLAST -> ARB, OP, BASE Sepolia{reset_color}")
+    print(f"{chain_symbols['Base Sepolia']}4. BASE -> ARB, OP, BLAST Sepolia{reset_color}")
+    print(f"{menu_color}5. Jalankan Semua{reset_color}")
+    print("")
+    choice = input("Masukkan pilihan (1-5): ")
+    return choice
+
 def main():
     print("\033[92m" + center_text(ascii_art) + "\033[0m")
     print(center_text(description))
@@ -153,23 +171,42 @@ def main():
     successful_txs = 0
 
     while True:
+        # Tampilkan menu dan dapatkan pilihan pengguna
+        choice = display_menu()
+        clear_terminal()  # Membersihkan terminal sebelum menampilkan transaksi baru
+        print("\033[92m" + center_text(ascii_art) + "\033[0m")
+        print(center_text(description))
+        print("\n\n")
+
         try:
-            # Transaksi dari Arbitrum Sepolia
-            successful_txs = process_network_transactions('Arbitrum Sepolia', ["ARB - BASE", "ARB - OP SEPOLIA", "ARB - BLAST"], networks['Arbitrum Sepolia'], successful_txs)
-
-            # Transaksi dari OP Sepolia
-            successful_txs = process_network_transactions('OP Sepolia', ["OP - BLAST", "OP - ARB", "OP - BASE"], networks['OP Sepolia'], successful_txs)
-
-            # Transaksi dari Blast Sepolia
-            successful_txs = process_network_transactions('Blast Sepolia', ["BLAST - OP", "BLAST - ARB", "BLAST - BASE"], networks['Blast Sepolia'], successful_txs)
-
-            # Transaksi dari Base Sepolia
-            successful_txs = process_network_transactions('Base Sepolia', ["BASE - OP", "BASE - ARB", "BASE - BLAST"], networks['Base Sepolia'], successful_txs)
+            if choice == '1':
+                while True:
+                    successful_txs = process_network_transactions('Arbitrum Sepolia', ["ARB - BASE", "ARB - OP SEPOLIA", "ARB - BLAST"], networks['Arbitrum Sepolia'], successful_txs)
+            elif choice == '2':
+                while True:
+                    successful_txs = process_network_transactions('OP Sepolia', ["OP - BLAST", "OP - ARB", "OP - BASE"], networks['OP Sepolia'], successful_txs)
+            elif choice == '3':
+                while True:
+                    successful_txs = process_network_transactions('Blast Sepolia', ["BLAST - OP", "BLAST - ARB", "BLAST - BASE"], networks['Blast Sepolia'], successful_txs)
+            elif choice == '4':
+                while True:
+                    successful_txs = process_network_transactions('Base Sepolia', ["BASE - OP", "BASE - ARB", "BASE - BLAST"], networks['Base Sepolia'], successful_txs)
+            elif choice == '5':
+                while True:
+                    successful_txs = process_network_transactions('Arbitrum Sepolia', ["ARB - BASE", "ARB - OP SEPOLIA", "ARB - BLAST"], networks['Arbitrum Sepolia'], successful_txs)
+                    successful_txs = process_network_transactions('OP Sepolia', ["OP - BLAST", "OP - ARB", "OP - BASE"], networks['OP Sepolia'], successful_txs)
+                    successful_txs = process_network_transactions('Blast Sepolia', ["BLAST - OP", "BLAST - ARB", "BLAST - BASE"], networks['Blast Sepolia'], successful_txs)
+                    successful_txs = process_network_transactions('Base Sepolia', ["BASE - OP", "BASE - ARB", "BASE - BLAST"], networks['Base Sepolia'], successful_txs)
+            else:
+                print("Pilihan tidak valid. Silakan coba lagi.")
 
         except KeyboardInterrupt:
             print("\nScript dihentikan oleh pengguna. ✋")
             print(f"Total transaksi sukses: {successful_txs} 🎉")
             sys.exit(0)
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
