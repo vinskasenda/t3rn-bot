@@ -62,7 +62,7 @@ def get_brn_balance(web3, my_address):
 # Fungsi untuk membuat dan mengirim transaksi
 def send_bridge_transaction(web3, account, my_address, data, network_name):
     nonce = web3.eth.get_transaction_count(my_address, 'pending')
-    value_in_ether = 0.011
+    value_in_ether = 0.1
     value_in_wei = web3.to_wei(value_in_ether, 'ether')
 
     try:
